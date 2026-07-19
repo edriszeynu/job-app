@@ -14,7 +14,8 @@ datasource db {
 enum Role {
   JOB_SEEKER
   EMPLOYER
-  // 👆 Only these two – no ADMIN or SUPER_ADMIN
+  ADMIN
+  // SUPER_ADMIN removed
 }
 
 enum JobType {
@@ -63,10 +64,6 @@ model User {
   image         String?       // profile picture URL
   role          Role          @default(JOB_SEEKER)
   emailVerified Boolean       @default(false)
-
-  // Platform admin privileges (separate from role)
-  isAdmin       Boolean       @default(false)   // can access admin dashboard
-  isSuperAdmin  Boolean       @default(false)   // can access super admin dashboard
 
   // Relations
   profile       UserProfile?
