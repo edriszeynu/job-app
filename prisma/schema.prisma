@@ -1,0 +1,399 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================
+//  ENUMS
+// ============================================================
+
+enum Role {
+  JOB_SEEKER
+  EMPLOYER
+  // 👆 Only these two – no ADMIN or SUPER_ADMIN
+}
+
+enum JobType {
+  FULL_TIME
+  PART_TIME
+  CONTRACT
+  INTERNSHIP
+  FREELANCE
+  TEMPORARY
+}
+
+enum ExperienceLevel {
+  ENTRY
+  JUNIOR
+  MID
+  SENIOR
+  LEAD
+}
+
+enum ApplicationStatus {
+  PENDING
+  REVIEWING
+  SHORTLISTED
+  INTERVIEW
+  OFFERED
+  HIRED
+  REJECTED
+}
+
+enum ReportStatus {
+  PENDING
+  REVIEWED
+  RESOLVED
+  DISMISSED
+}
+
+// ============================================================
+//  CORE MODELS
+// ============================================================
+
+model User {
+  id            String        @id @default(auto()) @map("_id") @db.ObjectId
+  email         String        @unique
+  password      String?       // null if OAuth
+  name          String
+  image         String?       // profile picture URL
+  role          Role          @default(JOB_SEEKER)
+  emailVerified Boolean       @default(false)
+
+  // Platform admin privileges (separate from role)
+  isAdmin       Boolean       @default(false)   // can access admin dashboard
+  isSuperAdmin  Boolean       @default(false)   // can access super admin dashboard
+
+  // Relations
+  profile       UserProfile?
+  applications  Application[]
+  savedJobs     SavedJob[]
+  savedCompanies SavedCompany[]
+  companies     Company[]     // if user is owner of company
+  sentMessages  Message[]     @relation("senderMessages")
+  receivedMessages Message[]  @relation("receiverMessages")
+  notifications Notification[]
+  reviews       Review[]
+  reports       Report[]      // reports filed by user
+  auditLogs     AuditLog[]    // actions performed by user
+  blogs         Blog[]
+  payments      Payment[]
+
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+}
+
+model UserProfile {
+  id            String        @id @default(auto()) @map("_id") @db.ObjectId
+  userId        String        @unique @db.ObjectId
+  user          User          @relation(fields: [userId], references: [id])
+
+  phone         String?
+  resume        String?       // Cloudinary URL
+  skills        String[]      // list of skill names
+  experience    Json?         // array: [{company, role, startDate, endDate, description}]
+  education     Json?         // array: [{school, degree, field, startYear, endYear, grade}]
+  certifications String[]
+  languages     String[]
+  socialLinks   Json?         // {github, linkedin, portfolio, twitter}
+  bio           String?
+
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+}
+
+model Company {
+  id            String        @id @default(auto()) @map("_id") @db.ObjectId
+  name          String        @unique
+  logo          String?       // Cloudinary URL
+  coverImage    String?
+  description   String?
+  website       String?
+  industry      String?
+  size          String?       // e.g., "1-10", "11-50"
+  headquarters  String?
+  foundedYear   Int?
+
+  ownerId       String        @db.ObjectId
+  owner         User          @relation(fields: [ownerId], references: [id])
+
+  isApproved    Boolean       @default(false)
+
+  jobs          Job[]
+  reviews       Review[]
+  savedBy       SavedCompany[]
+
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+}
+
+model Job {
+  id            String        @id @default(auto()) @map("_id") @db.ObjectId
+  title         String
+  description   String
+  responsibilities String?
+  requirements  String?
+  salaryMin     Float?
+  salaryMax     Float?
+  currency      String        @default("USD")
+  isNegotiable  Boolean       @default(false)
+  jobType       JobType       @default(FULL_TIME)
+  experienceLevel ExperienceLevel @default(ENTRY)
+  location      String?
+  isRemote      Boolean       @default(false)
+  isHybrid      Boolean       @default(false)
+
+  companyId     String        @db.ObjectId
+  company       Company       @relation(fields: [companyId], references: [id])
+
+  category      String?       // could be a free text or reference to a Category model
+  skills        String[]      // list of required skills
+
+  isActive      Boolean       @default(true)
+  isFeatured    Boolean       @default(false)
+  isApproved    Boolean       @default(false)  // admin approval
+
+  applications  Application[]
+  savedBy       SavedJob[]
+
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+}
+
+model Application {
+  id            String        @id @default(auto()) @map("_id") @db.ObjectId
+  jobId         String        @db.ObjectId
+  job           Job           @relation(fields: [jobId], references: [id])
+  userId        String        @db.ObjectId
+  user          User          @relation(fields: [userId], references: [id])
+
+  resume        String        // URL of uploaded resume
+  coverLetter   String?
+  status        ApplicationStatus @default(PENDING)
+
+  interviewDate DateTime?
+  feedback      String?       // employer feedback
+
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+}
+
+// ============================================================
+//  FAVORITES / SAVED ITEMS
+// ============================================================
+
+model SavedJob {
+  id            String        @id @default(auto()) @map("_id") @db.ObjectId
+  userId        String        @db.ObjectId
+  user          User          @relation(fields: [userId], references: [id])
+  jobId         String        @db.ObjectId
+  job           Job           @relation(fields: [jobId], references: [id])
+
+  createdAt     DateTime      @default(now())
+}
+
+model SavedCompany {
+  id            String        @id @default(auto()) @map("_id") @db.ObjectId
+  userId        String        @db.ObjectId
+  user          User          @relation(fields: [userId], references: [id])
+  companyId     String        @db.ObjectId
+  company       Company       @relation(fields: [companyId], references: [id])
+
+  createdAt     DateTime      @default(now())
+}
+
+// ============================================================
+//  NOTIFICATIONS
+// ============================================================
+
+model Notification {
+  id            String        @id @default(auto()) @map("_id") @db.ObjectId
+  userId        String        @db.ObjectId
+  user          User          @relation(fields: [userId], references: [id])
+  title         String
+  message       String
+  read          Boolean       @default(false)
+  link          String?       // URL to redirect to
+
+  createdAt     DateTime      @default(now())
+}
+
+// ============================================================
+//  MESSAGING
+// ============================================================
+
+model Conversation {
+  id            String        @id @default(auto()) @map("_id") @db.ObjectId
+  participants  String[]      // array of user IDs
+  lastMessageAt DateTime     @default(now())
+
+  messages      Message[]
+
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+}
+
+model Message {
+  id            String        @id @default(auto()) @map("_id") @db.ObjectId
+  conversationId String      @db.ObjectId
+  conversation  Conversation  @relation(fields: [conversationId], references: [id])
+
+  senderId      String        @db.ObjectId
+  sender        User          @relation("senderMessages", fields: [senderId], references: [id])
+  receiverId    String        @db.ObjectId
+  receiver      User          @relation("receiverMessages", fields: [receiverId], references: [id])
+
+  content       String
+  isRead        Boolean       @default(false)
+  attachments   String[]      // URLs
+
+  createdAt     DateTime      @default(now())
+}
+
+// ============================================================
+//  REVIEWS & RATINGS
+// ============================================================
+
+model Review {
+  id            String        @id @default(auto()) @map("_id") @db.ObjectId
+  userId        String        @db.ObjectId
+  user          User          @relation(fields: [userId], references: [id])
+  companyId     String        @db.ObjectId
+  company       Company       @relation(fields: [companyId], references: [id])
+
+  rating        Int           // 1-5
+  comment       String?
+
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@unique([userId, companyId]) // one review per user per company
+}
+
+// ============================================================
+//  REPORTS (flag inappropriate content)
+// ============================================================
+
+model Report {
+  id            String        @id @default(auto()) @map("_id") @db.ObjectId
+  reporterId    String        @db.ObjectId
+  reporter      User          @relation(fields: [reporterId], references: [id])
+
+  targetType    String        // "JOB", "COMPANY", "USER", "REVIEW"
+  targetId      String        // ID of the reported entity
+
+  reason        String
+  description   String?
+
+  status        ReportStatus  @default(PENDING)
+  resolvedBy    String?       // admin ID who resolved it
+  resolvedAt    DateTime?
+
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+}
+
+// ============================================================
+//  CMS / STATIC PAGES
+// ============================================================
+
+model Blog {
+  id            String        @id @default(auto()) @map("_id") @db.ObjectId
+  title         String
+  slug          String        @unique
+  content       String        // HTML or MDX
+  excerpt       String?
+  coverImage    String?
+  authorId      String        @db.ObjectId
+  author        User          @relation(fields: [authorId], references: [id])
+  published     Boolean       @default(false)
+  publishedAt   DateTime?
+
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+}
+
+model FAQ {
+  id            String        @id @default(auto()) @map("_id") @db.ObjectId
+  question      String
+  answer        String
+  order         Int           @default(0)
+
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+}
+
+model Page {
+  id            String        @id @default(auto()) @map("_id") @db.ObjectId
+  slug          String        @unique       // "about", "privacy", "terms"
+  title         String
+  content       String        // HTML content
+  metaTitle     String?
+  metaDescription String?
+
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+}
+
+// ============================================================
+//  SUBSCRIPTIONS & PAYMENTS (optional)
+// ============================================================
+
+model Plan {
+  id            String        @id @default(auto()) @map("_id") @db.ObjectId
+  name          String        // "Basic", "Pro", "Enterprise"
+  price         Float
+  currency      String        @default("USD")
+  interval      String        // "month", "year"
+  features      String[]      // list of features
+  isActive      Boolean       @default(true)
+
+  payments      Payment[]
+
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+}
+
+model Payment {
+  id            String        @id @default(auto()) @map("_id") @db.ObjectId
+  userId        String        @db.ObjectId
+  user          User          @relation(fields: [userId], references: [id])
+  planId        String        @db.ObjectId
+  plan          Plan          @relation(fields: [planId], references: [id])
+
+  amount        Float
+  currency      String        @default("USD")
+  status        String        // "pending", "completed", "failed"
+  stripePaymentId String?     // if using Stripe
+
+  createdAt     DateTime      @default(now())
+}
+
+// ============================================================
+//  ADMIN / SYSTEM
+// ============================================================
+
+model AuditLog {
+  id            String        @id @default(auto()) @map("_id") @db.ObjectId
+  userId        String        @db.ObjectId
+  user          User          @relation(fields: [userId], references: [id])
+  action        String        // "login", "create_job", "approve_company", etc.
+  details       Json?         // additional context
+  ipAddress     String?
+  userAgent     String?
+
+  createdAt     DateTime      @default(now())
+}
+
+model Setting {
+  id            String        @id @default(auto()) @map("_id") @db.ObjectId
+  key           String        @unique
+  value         Json          // can store any type (string, number, object)
+  description   String?
+
+  updatedAt     DateTime      @updatedAt
+}
