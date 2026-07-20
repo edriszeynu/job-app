@@ -15,7 +15,6 @@ enum Role {
   JOB_SEEKER
   EMPLOYER
   ADMIN
-  // SUPER_ADMIN removed
 }
 
 enum JobType {
@@ -59,29 +58,38 @@ enum ReportStatus {
 model User {
   id            String        @id @default(auto()) @map("_id") @db.ObjectId
   email         String        @unique
-  password      String?       // null if OAuth
+  password      String?
   name          String
-  image         String?       // profile picture URL
+  image         String?
   role          Role          @default(JOB_SEEKER)
   emailVerified Boolean       @default(false)
 
-  // Relations
   profile       UserProfile?
   applications  Application[]
   savedJobs     SavedJob[]
   savedCompanies SavedCompany[]
-  companies     Company[]     // if user is owner of company
+  companies     Company[]
   sentMessages  Message[]     @relation("senderMessages")
   receivedMessages Message[]  @relation("receiverMessages")
   notifications Notification[]
   reviews       Review[]
-  reports       Report[]      // reports filed by user
-  auditLogs     AuditLog[]    // actions performed by user
+  reports       Report[]
+  auditLogs     AuditLog[]
   blogs         Blog[]
   payments      Payment[]
 
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
+}
+
+// 👇 VerificationToken model (added)
+model VerificationToken {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
 }
 
 model UserProfile {
@@ -90,13 +98,13 @@ model UserProfile {
   user          User          @relation(fields: [userId], references: [id])
 
   phone         String?
-  resume        String?       // Cloudinary URL
-  skills        String[]      // list of skill names
-  experience    Json?         // array: [{company, role, startDate, endDate, description}]
-  education     Json?         // array: [{school, degree, field, startYear, endYear, grade}]
+  resume        String?
+  skills        String[]
+  experience    Json?
+  education     Json?
   certifications String[]
   languages     String[]
-  socialLinks   Json?         // {github, linkedin, portfolio, twitter}
+  socialLinks   Json?
   bio           String?
 
   createdAt     DateTime      @default(now())
@@ -106,12 +114,12 @@ model UserProfile {
 model Company {
   id            String        @id @default(auto()) @map("_id") @db.ObjectId
   name          String        @unique
-  logo          String?       // Cloudinary URL
+  logo          String?
   coverImage    String?
   description   String?
   website       String?
   industry      String?
-  size          String?       // e.g., "1-10", "11-50"
+  size          String?
   headquarters  String?
   foundedYear   Int?
 
@@ -147,12 +155,12 @@ model Job {
   companyId     String        @db.ObjectId
   company       Company       @relation(fields: [companyId], references: [id])
 
-  category      String?       // could be a free text or reference to a Category model
-  skills        String[]      // list of required skills
+  category      String?
+  skills        String[]
 
   isActive      Boolean       @default(true)
   isFeatured    Boolean       @default(false)
-  isApproved    Boolean       @default(false)  // admin approval
+  isApproved    Boolean       @default(false)
 
   applications  Application[]
   savedBy       SavedJob[]
@@ -168,12 +176,12 @@ model Application {
   userId        String        @db.ObjectId
   user          User          @relation(fields: [userId], references: [id])
 
-  resume        String        // URL of uploaded resume
+  resume        String
   coverLetter   String?
   status        ApplicationStatus @default(PENDING)
 
   interviewDate DateTime?
-  feedback      String?       // employer feedback
+  feedback      String?
 
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
@@ -214,7 +222,7 @@ model Notification {
   title         String
   message       String
   read          Boolean       @default(false)
-  link          String?       // URL to redirect to
+  link          String?
 
   createdAt     DateTime      @default(now())
 }
@@ -225,7 +233,7 @@ model Notification {
 
 model Conversation {
   id            String        @id @default(auto()) @map("_id") @db.ObjectId
-  participants  String[]      // array of user IDs
+  participants  String[]
   lastMessageAt DateTime     @default(now())
 
   messages      Message[]
@@ -246,7 +254,7 @@ model Message {
 
   content       String
   isRead        Boolean       @default(false)
-  attachments   String[]      // URLs
+  attachments   String[]
 
   createdAt     DateTime      @default(now())
 }
@@ -262,17 +270,17 @@ model Review {
   companyId     String        @db.ObjectId
   company       Company       @relation(fields: [companyId], references: [id])
 
-  rating        Int           // 1-5
+  rating        Int
   comment       String?
 
   createdAt     DateTime      @default(now())
   updatedAt     DateTime      @updatedAt
 
-  @@unique([userId, companyId]) // one review per user per company
+  @@unique([userId, companyId])
 }
 
 // ============================================================
-//  REPORTS (flag inappropriate content)
+//  REPORTS
 // ============================================================
 
 model Report {
@@ -280,14 +288,14 @@ model Report {
   reporterId    String        @db.ObjectId
   reporter      User          @relation(fields: [reporterId], references: [id])
 
-  targetType    String        // "JOB", "COMPANY", "USER", "REVIEW"
-  targetId      String        // ID of the reported entity
+  targetType    String
+  targetId      String
 
   reason        String
   description   String?
 
   status        ReportStatus  @default(PENDING)
-  resolvedBy    String?       // admin ID who resolved it
+  resolvedBy    String?
   resolvedAt    DateTime?
 
   createdAt     DateTime      @default(now())
@@ -302,7 +310,7 @@ model Blog {
   id            String        @id @default(auto()) @map("_id") @db.ObjectId
   title         String
   slug          String        @unique
-  content       String        // HTML or MDX
+  content       String
   excerpt       String?
   coverImage    String?
   authorId      String        @db.ObjectId
@@ -326,9 +334,9 @@ model FAQ {
 
 model Page {
   id            String        @id @default(auto()) @map("_id") @db.ObjectId
-  slug          String        @unique       // "about", "privacy", "terms"
+  slug          String        @unique
   title         String
-  content       String        // HTML content
+  content       String
   metaTitle     String?
   metaDescription String?
 
@@ -337,16 +345,16 @@ model Page {
 }
 
 // ============================================================
-//  SUBSCRIPTIONS & PAYMENTS (optional)
+//  SUBSCRIPTIONS & PAYMENTS
 // ============================================================
 
 model Plan {
   id            String        @id @default(auto()) @map("_id") @db.ObjectId
-  name          String        // "Basic", "Pro", "Enterprise"
+  name          String
   price         Float
   currency      String        @default("USD")
-  interval      String        // "month", "year"
-  features      String[]      // list of features
+  interval      String
+  features      String[]
   isActive      Boolean       @default(true)
 
   payments      Payment[]
@@ -364,8 +372,8 @@ model Payment {
 
   amount        Float
   currency      String        @default("USD")
-  status        String        // "pending", "completed", "failed"
-  stripePaymentId String?     // if using Stripe
+  status        String
+  stripePaymentId String?
 
   createdAt     DateTime      @default(now())
 }
@@ -378,8 +386,8 @@ model AuditLog {
   id            String        @id @default(auto()) @map("_id") @db.ObjectId
   userId        String        @db.ObjectId
   user          User          @relation(fields: [userId], references: [id])
-  action        String        // "login", "create_job", "approve_company", etc.
-  details       Json?         // additional context
+  action        String
+  details       Json?
   ipAddress     String?
   userAgent     String?
 
@@ -389,7 +397,7 @@ model AuditLog {
 model Setting {
   id            String        @id @default(auto()) @map("_id") @db.ObjectId
   key           String        @unique
-  value         Json          // can store any type (string, number, object)
+  value         Json
   description   String?
 
   updatedAt     DateTime      @updatedAt

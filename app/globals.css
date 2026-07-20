@@ -72,9 +72,9 @@
 }
 
 .dark {
-  --background: #070411;
+  --background: #1e1b2e;
   --foreground: #ffffff;
-  --card: #070411;
+  --card: #1e1b2e;
   --card-foreground: #ffffff;
   --popover: #070411;
   --popover-foreground: #ffffff;
