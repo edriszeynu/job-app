@@ -167,3 +167,4 @@ jobhub/
 ## License
 
 MIT
+# job-application
