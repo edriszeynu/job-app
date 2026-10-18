@@ -20,7 +20,6 @@ import {
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { Mail, Lock, ArrowRight, Briefcase } from "lucide-react";
-import ThemeToggle from "@/components/ThemeToggle";
 
 const signInSchema = z.object({
   email: z.string().email("Invalid email address"),
@@ -38,6 +37,7 @@ export default function SignInPage() {
 
   const { isLoading, setLoading } = useAuthStore();
   const [authError, setAuthError] = useState<string | null>(null);
+  const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
   const form = useForm<SignInValues>({
     resolver: zodResolver(signInSchema),
@@ -54,7 +54,7 @@ export default function SignInPage() {
       setAuthError("An error occurred. Please try again.");
     }
     if (registered === "true") {
-      setAuthError("Registration successful! Please sign in.");
+      setSuccessMsg("Registration successful! Please sign in.");
     }
   }, [error, registered]);
 
@@ -90,7 +90,6 @@ export default function SignInPage() {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 via-background to-secondary/10 p-4 relative">
       {/* Theme Toggle */}
       <div className="absolute top-4 right-4 z-50">
-        <ThemeToggle />
       </div>
 
       {/* Decorative blobs */}
@@ -113,6 +112,11 @@ export default function SignInPage() {
             <p className="text-muted-foreground text-sm mt-1.5">Sign in to continue your journey</p>
           </div>
 
+          {successMsg && (
+            <div className="mb-4 p-3 rounded-lg bg-emerald-500/10 text-emerald-600 text-sm text-center border border-emerald-500/20">
+              {successMsg}
+            </div>
+          )}
           {authError && (
             <div className="mb-4 p-3 rounded-lg bg-destructive/10 text-destructive text-sm text-center border border-destructive/20">
               {authError}

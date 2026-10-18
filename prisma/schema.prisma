@@ -64,6 +64,10 @@ model User {
   role          Role          @default(JOB_SEEKER)
   emailVerified Boolean       @default(false)
 
+  // Platform admin privileges
+  isAdmin       Boolean       @default(false)
+  isSuperAdmin  Boolean       @default(false)
+
   profile       UserProfile?
   applications  Application[]
   savedJobs     SavedJob[]
@@ -122,6 +126,7 @@ model Company {
   size          String?
   headquarters  String?
   foundedYear   Int?
+  socialLinks   Json?          // {linkedin, twitter, facebook}
 
   ownerId       String        @db.ObjectId
   owner         User          @relation(fields: [ownerId], references: [id])

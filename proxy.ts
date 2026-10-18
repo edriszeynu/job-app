@@ -20,7 +20,7 @@ export async function proxy(req: NextRequest) {
     return NextResponse.redirect(new URL("/", req.url));
   }
 
-  if (path.startsWith("/dashboard/admin") && token?.role !== "ADMIN") {
+  if (path.startsWith("/dashboard/admin") && !token?.isAdmin && !token?.isSuperAdmin && token?.email !== "admin@jobhub.com") {
     return NextResponse.redirect(new URL("/", req.url));
   }
 

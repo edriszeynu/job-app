@@ -52,6 +52,8 @@ export const authOptions: NextAuthOptions = {
           role: user.role,
           image: user.image,
           emailVerified: user.emailVerified,
+          isAdmin: user.isAdmin,
+          isSuperAdmin: user.isSuperAdmin,
         };
       },
     }),
@@ -60,16 +62,22 @@ export const authOptions: NextAuthOptions = {
     async jwt({ token, user }) {
       if (user) {
         token.id = user.id;
+        token.email = user.email;
         token.role = user.role;
         token.emailVerified = user.emailVerified;
+        token.isAdmin = (user as any).isAdmin;
+        token.isSuperAdmin = (user as any).isSuperAdmin;
       }
       return token;
     },
     async session({ session, token }) {
       if (session.user) {
         session.user.id = token.id as string;
-        session.user.role = token.role as Role;
+        session.user.email = token.email as string;
+        session.user.role = token.role as any;
         session.user.emailVerified = token.emailVerified as boolean;
+        (session.user as any).isAdmin = token.isAdmin;
+        (session.user as any).isSuperAdmin = token.isSuperAdmin;
       }
       return session;
     },

@@ -26,7 +26,6 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { User, Mail, Lock, Briefcase, ArrowRight } from "lucide-react";
-import ThemeToggle from "@/components/ThemeToggle";
 
 const registerSchema = z
   .object({
@@ -88,7 +87,6 @@ export default function RegisterPage() {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 via-background to-secondary/10 p-4 relative">
         <div className="absolute top-4 right-4 z-50">
-          <ThemeToggle />
         </div>
 
         <div className="absolute -top-20 -right-20 w-72 h-72 bg-primary/20 rounded-full blur-3xl opacity-50 animate-pulse" />
@@ -125,7 +123,6 @@ export default function RegisterPage() {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-primary/5 via-background to-secondary/10 p-4 relative">
       {/* Theme Toggle */}
       <div className="absolute top-4 right-4 z-50">
-        <ThemeToggle />
       </div>
 
       {/* Decorative blobs */}

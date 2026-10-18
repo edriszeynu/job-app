@@ -9,6 +9,11 @@ export default async function DashboardPage() {
     redirect("/auth/signin?callbackUrl=/dashboard");
   }
 
+  const u = session.user as any;
+  if (u.isAdmin || u.isSuperAdmin || u.email === "admin@jobhub.com") {
+    redirect("/dashboard/admin");
+  }
+
   if (session.user.role === "EMPLOYER") {
     redirect("/dashboard/employer");
   }

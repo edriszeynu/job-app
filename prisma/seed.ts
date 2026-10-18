@@ -23,13 +23,15 @@ async function main() {
 
   const adminUser = await prisma.user.upsert({
     where: { email: 'admin@jobhub.com' },
-    update: {},
+    update: { isAdmin: true, isSuperAdmin: true, password: await bcrypt.hash('Admin@123456', 12) },
     create: {
       email: 'admin@jobhub.com',
-      password: hashedPassword,
-      name: 'Admin',
-      role: 'ADMIN',
+      password: await bcrypt.hash('Admin@123456', 12),
+      name: 'Super Admin',
+      role: 'JOB_SEEKER',
       emailVerified: true,
+      isAdmin: true,
+      isSuperAdmin: true,
     },
   });
 
