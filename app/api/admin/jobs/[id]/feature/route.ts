@@ -36,7 +36,7 @@ export async function PUT(
     // Log action
     await prisma.auditLog.create({
       data: {
-        userId: auth.session.user.id,
+        userId: auth.session?.user?.id ?? "",
         action: featured ? "FEATURE_JOB" : "UNFEATURE_JOB",
         details: { jobId: id, title: job.title },
       },

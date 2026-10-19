@@ -7,26 +7,24 @@ import { revalidatePath } from "next/cache";
 
 export async function withdrawApplication(applicationId: string) {
   const session = await getServerSession(authOptions);
-  if (!session?.user) return { error: "Not authenticated" };
+  if (!session?.user) return;
 
   const app = await prisma.application.findFirst({
     where: { id: applicationId, userId: session.user.id },
   });
-  if (!app) return { error: "Application not found" };
-  if (app.status !== "PENDING") return { error: "Only pending applications can be withdrawn" };
+  if (!app) return;
+  if (app.status !== "PENDING") return;
 
   await prisma.application.delete({ where: { id: applicationId } });
   revalidatePath("/dashboard/seeker/applications");
-  return { success: true };
 }
 
 export async function unsaveJob(savedJobId: string) {
   const session = await getServerSession(authOptions);
-  if (!session?.user) return { error: "Not authenticated" };
+  if (!session?.user) return;
 
   await prisma.savedJob.deleteMany({
     where: { id: savedJobId, userId: session.user.id },
   });
   revalidatePath("/dashboard/seeker/saved-jobs");
-  return { success: true };
 }

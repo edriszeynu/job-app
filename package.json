@@ -18,6 +18,7 @@
     "@dnd-kit/utilities": "^3.2.2",
     "@hookform/resolvers": "^5.4.0",
     "@next-auth/prisma-adapter": "^1.0.7",
+    "@react-email/components": "^1.0.12",
     "@tanstack/react-query-devtools": "^5.101.2",
     "@tanstack/react-table": "^8.21.3",
     "axios": "^1.18.1",

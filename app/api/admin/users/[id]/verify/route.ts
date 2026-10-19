@@ -34,7 +34,7 @@ export async function PUT(
     // Log action
     await prisma.auditLog.create({
       data: {
-        userId: auth.session.user.id,
+        userId: auth.session?.user?.id ?? "",
         action: "VERIFY_USER",
         details: { userId: id, email: user.email },
       },

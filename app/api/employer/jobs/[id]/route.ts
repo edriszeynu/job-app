@@ -118,7 +118,7 @@ export async function PUT(
     return NextResponse.json({ success: true, data: updatedJob });
   } catch (error) {
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: error.errors[0].message }, { status: 400 });
+      return NextResponse.json({ error: error.issues?.[0]?.message ?? error.message }, { status: 400 });
     }
     console.error("PUT /api/employer/jobs/[id] error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });

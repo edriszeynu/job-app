@@ -36,11 +36,10 @@ function SheetContent({
   children,
   side = "left",
   className,
+  ...props
 }: {
-  children: React.ReactNode;
   side?: "left" | "right";
-  className?: string;
-}) {
+} & React.ComponentProps<"div">) {
   const { open, onOpenChange } = React.useContext(SheetContext);
 
   if (!open) return null;
@@ -57,6 +56,7 @@ function SheetContent({
           side === "left" ? "left-0" : "right-0",
           className
         )}
+        {...props}
       >
         {children}
       </div>
@@ -64,4 +64,23 @@ function SheetContent({
   );
 }
 
-export { Sheet, SheetTrigger, SheetContent };
+function SheetHeader({ className, ...props }: React.ComponentProps<"div">) {
+  return <div className={cn("flex flex-col gap-1.5 p-4", className)} {...props} />;
+}
+
+function SheetTitle({ className, ...props }: React.ComponentProps<"h2">) {
+  return <h2 className={cn("text-lg font-semibold", className)} {...props} />;
+}
+
+function SheetDescription({ className, ...props }: React.ComponentProps<"p">) {
+  return <p className={cn("text-sm text-muted-foreground", className)} {...props} />;
+}
+
+export {
+  Sheet,
+  SheetTrigger,
+  SheetContent,
+  SheetHeader,
+  SheetTitle,
+  SheetDescription,
+};

@@ -74,17 +74,17 @@ const jobSchema = z.object({
   jobType: z.string().min(1, "Please select a job type"),
   category: z.string().optional(),
   location: z.string().optional(),
-  isRemote: z.boolean().default(false),
-  isHybrid: z.boolean().default(false),
+  isRemote: z.boolean(),
+  isHybrid: z.boolean(),
   salaryMin: z.string().optional(),
   salaryMax: z.string().optional(),
-  currency: z.string().default("USD"),
-  isNegotiable: z.boolean().default(false),
+  currency: z.string(),
+  isNegotiable: z.boolean(),
   description: z.string().min(50, "Description must be at least 50 characters"),
   responsibilities: z.string().optional(),
   requirements: z.string().optional(),
   experienceLevel: z.string().min(1, "Please select an experience level"),
-  isActive: z.boolean().default(true),
+  isActive: z.boolean(),
 });
 
 type JobValues = z.infer<typeof jobSchema>;

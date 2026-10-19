@@ -32,7 +32,7 @@ export default async function CompanyDetailPage({
 
   if (!company) notFound();
 
-  const socialLinks = (company.socialLinks ?? {}) as { linkedin?: string; twitter?: string; facebook?: string };
+  const socialLinks = ((company as any).socialLinks ?? {}) as { linkedin?: string; twitter?: string; facebook?: string };
 
   return (
     <>

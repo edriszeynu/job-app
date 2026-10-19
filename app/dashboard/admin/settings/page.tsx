@@ -142,7 +142,7 @@ export default function SettingsPage() {
                 <Select
                   value={settings.currency}
                   onValueChange={(value) =>
-                    setSettings({ ...settings, currency: value })
+                    setSettings({ ...settings, currency: value ?? settings.currency })
                   }
                 >
                   <SelectTrigger>

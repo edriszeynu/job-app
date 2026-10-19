@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { Suspense, useState, useEffect } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useJobs } from "@/hooks/useJobs";
 import Navbar from "@/components/Navbar";
@@ -9,7 +9,7 @@ import JobFilters from "@/components/jobs/JobFilters";
 import JobList from "@/components/jobs/JobList";
 import Pagination from "@/components/jobs/Pagination";
 
-export default function JobsPage() {
+function JobsContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
 
@@ -95,5 +95,13 @@ export default function JobsPage() {
       </main>
       <Footer />
     </>
+  );
+}
+
+export default function JobsPage() {
+  return (
+    <Suspense fallback={null}>
+      <JobsContent />
+    </Suspense>
   );
 }

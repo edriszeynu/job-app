@@ -26,17 +26,16 @@ export async function PUT(
       );
     }
 
-    // Toggle suspended status
-    // Add a "suspended" field to User model if not exists
+    // Suspend by setting emailVerified to false (disables login effectively)
     await prisma.user.update({
       where: { id },
-      data: { suspended: true },
+      data: { emailVerified: false },
     });
 
     // Log action
     await prisma.auditLog.create({
       data: {
-        userId: auth.session.user.id,
+        userId: auth.session?.user?.id ?? "",
         action: "SUSPEND_USER",
         details: { userId: id, email: user.email },
       },

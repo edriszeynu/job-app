@@ -10,8 +10,6 @@ const updateProfileSchema = z.object({
   name: z.string().min(2).optional(),
   phone: z.string().optional().nullable(),
   bio: z.string().max(500).optional().nullable(),
-  location: z.string().optional().nullable(),
-  // Add more fields as needed
 });
 
 export async function GET() {
@@ -40,8 +38,6 @@ export async function GET() {
       email: user.email,
       phone: user.profile?.phone || null,
       bio: user.profile?.bio || null,
-      location: user.profile?.location || null,
-      // Add more fields as needed
     });
   } catch (error) {
     console.error("Profile GET error:", error);
@@ -94,9 +90,6 @@ export async function PUT(request: NextRequest) {
     if (validated.bio !== undefined) {
       profileUpdateData.bio = validated.bio;
     }
-    if (validated.location !== undefined) {
-      profileUpdateData.location = validated.location;
-    }
 
     // Perform updates in transaction
     await prisma.$transaction([
@@ -114,7 +107,7 @@ export async function PUT(request: NextRequest) {
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { error: error.errors[0].message },
+        { error: error.issues?.[0]?.message ?? error.message },
         { status: 400 }
       );
     }

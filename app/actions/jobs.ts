@@ -23,7 +23,7 @@ export async function applyToJob(formData: FormData) {
 
   const result = applySchema.safeParse(raw);
   if (!result.success) {
-    return { error: result.error.errors[0].message };
+    return { error: result.error.issues[0].message };
   }
 
   const { jobId, resume, coverLetter } = result.data;

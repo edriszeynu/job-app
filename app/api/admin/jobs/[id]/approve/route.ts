@@ -37,7 +37,7 @@ export async function PUT(
     // Log action
     await prisma.auditLog.create({
       data: {
-        userId: auth.session.user.id,
+        userId: auth.session?.user?.id ?? "",
         action: approved ? "APPROVE_JOB" : "REJECT_JOB",
         details: {
           jobId: id,

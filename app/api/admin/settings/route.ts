@@ -72,7 +72,7 @@ export async function PUT(request: NextRequest) {
     // Log action
     await prisma.auditLog.create({
       data: {
-        userId: auth.session.user.id,
+        userId: auth.session?.user?.id ?? "",
         action: "UPDATE_SETTINGS",
         details: { keys: Object.keys(body) },
       },

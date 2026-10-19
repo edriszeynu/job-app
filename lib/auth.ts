@@ -64,7 +64,7 @@ export const authOptions: NextAuthOptions = {
         token.id = user.id;
         token.email = user.email;
         token.role = user.role;
-        token.emailVerified = user.emailVerified;
+        token.emailVerified = Boolean(user.emailVerified);
         token.isAdmin = (user as any).isAdmin;
         token.isSuperAdmin = (user as any).isSuperAdmin;
       }

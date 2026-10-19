@@ -121,6 +121,7 @@ export default async function ProfilePage() {
   const profile = user.profile;
   const isEmployer = user.role === "EMPLOYER";
   const isAdmin = user.role === "ADMIN";
+  const location = isEmployer ? user.companies[0]?.headquarters : null;
 
   const joinedDate = new Date(user.createdAt).toLocaleDateString("en-US", {
     year: "numeric",
@@ -198,10 +199,10 @@ export default async function ProfilePage() {
                         <span>{profile.phone}</span>
                       </div>
                     )}
-                    {profile?.location && (
+                    {location && (
                       <div className="flex items-center gap-1.5">
                         <MapPinIcon className="h-4 w-4" />
-                        <span>{profile.location}</span>
+                        <span>{location}</span>
                       </div>
                     )}
                   </div>

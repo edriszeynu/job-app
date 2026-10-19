@@ -7,17 +7,16 @@ import { revalidatePath } from "next/cache";
 
 export async function toggleJobActive(jobId: string, isActive: boolean) {
   const session = await getServerSession(authOptions);
-  if (!session?.user) return { error: "Not authenticated" };
+  if (!session?.user) return;
 
   const company = await prisma.company.findFirst({ where: { ownerId: session.user.id } });
-  if (!company) return { error: "No company found" };
+  if (!company) return;
 
   const job = await prisma.job.findFirst({ where: { id: jobId, companyId: company.id } });
-  if (!job) return { error: "Job not found" };
+  if (!job) return;
 
   await prisma.job.update({ where: { id: jobId }, data: { isActive } });
   revalidatePath("/dashboard/employer/jobs");
-  return { success: true };
 }
 
 export async function updateApplicationStatus(applicationId: string, status: string) {
