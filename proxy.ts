@@ -8,7 +8,12 @@ export async function proxy(req: NextRequest) {
 
   // Require auth for protected routes
   if (path.startsWith("/dashboard") && !token) {
-    return NextResponse.redirect(new URL("/auth/signin", req.url));
+    const signInUrl = new URL("/auth/signin", req.url);
+    signInUrl.searchParams.set(
+      "callbackUrl",
+      `${path}${req.nextUrl.search}`
+    );
+    return NextResponse.redirect(signInUrl);
   }
 
   // Role-based protection

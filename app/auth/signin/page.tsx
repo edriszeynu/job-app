@@ -2,7 +2,7 @@
 
 import { Suspense, useState, useEffect } from "react";
 import { signIn } from "next-auth/react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -29,9 +29,8 @@ const signInSchema = z.object({
 type SignInValues = z.infer<typeof signInSchema>;
 
 function SignInContent() {
-  const router = useRouter();
   const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get("callbackUrl") || "/";
+  const callbackUrl = searchParams.get("callbackUrl") || "/dashboard";
   const error = searchParams.get("error");
   const registered = searchParams.get("registered");
 
@@ -73,8 +72,7 @@ function SignInContent() {
       setAuthError("Invalid email or password");
       setLoading(false);
     } else {
-      router.push(callbackUrl);
-      router.refresh();
+      window.location.assign(result?.url || "/dashboard");
     }
   };
 
