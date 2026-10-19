@@ -10,7 +10,12 @@ export default async function DashboardPage() {
   }
 
   const u = session.user as any;
-  if (u.isAdmin || u.isSuperAdmin || u.email === "admin@jobhub.com") {
+  if (
+    session.user.role === "ADMIN" ||
+    u.isAdmin ||
+    u.isSuperAdmin ||
+    u.email === "admin@jobhub.com"
+  ) {
     redirect("/dashboard/admin");
   }
 

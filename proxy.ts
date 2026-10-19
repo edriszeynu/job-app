@@ -8,7 +8,12 @@ function getDashboardPath(token: {
   isSuperAdmin?: boolean;
   email?: string | null;
 }) {
-  if (token.isAdmin || token.isSuperAdmin || token.email === "admin@jobhub.com") {
+  if (
+    token.role === "ADMIN" ||
+    token.isAdmin ||
+    token.isSuperAdmin ||
+    token.email === "admin@jobhub.com"
+  ) {
     return "/dashboard/admin";
   }
 
@@ -44,7 +49,13 @@ export async function proxy(req: NextRequest) {
     return NextResponse.redirect(new URL(getDashboardPath(token!), req.url));
   }
 
-  if (path.startsWith("/dashboard/admin") && !token?.isAdmin && !token?.isSuperAdmin && token?.email !== "admin@jobhub.com") {
+  if (
+    path.startsWith("/dashboard/admin") &&
+    token?.role !== "ADMIN" &&
+    !token?.isAdmin &&
+    !token?.isSuperAdmin &&
+    token?.email !== "admin@jobhub.com"
+  ) {
     return NextResponse.redirect(new URL(getDashboardPath(token!), req.url));
   }
 
