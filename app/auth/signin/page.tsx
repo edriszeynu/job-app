@@ -72,7 +72,13 @@ function SignInContent() {
       setAuthError("Invalid email or password");
       setLoading(false);
     } else {
-      window.location.assign(result?.url || "/dashboard");
+      const destination = new URL(
+        result?.url || callbackUrl,
+        window.location.origin
+      );
+      window.location.assign(
+        `${destination.pathname}${destination.search}${destination.hash}`
+      );
     }
   };
 
